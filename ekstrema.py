@@ -42,4 +42,59 @@ class EktremaLokalne:
             else:
                 print(f"P({x}, {y}) punkt siodlowy")
 
-EktremaLokalne('x**3 +3*x*y**2 +6*x*y').check_sufficien_condition()
+class EkstremaWarunkowe:
+    def __init__(self, f, g):
+        self.f = parse_expr(f)
+        self.g = parse_expr(g)
+        self.x, self.y, self.lambd = symbols('x y lambda')
+        self.l = self.f + self.lambd * self.g
+        self.l_x = self.l.diff('x')
+        self.l_y = self.l.diff('y')
+
+    def get_punkts(self):
+        eq1 = Eq(self.l_x, 0)
+        eq2 = Eq(self.l_y, 0)
+        eq3 = Eq(self.g, 0)
+        print('Do rozwiązania 3 równanania:\n')
+        pprint(eq1)
+        pprint(eq2)
+        pprint(eq3)
+
+        punkts = solve([eq1, eq2, eq3], [self.x, self.y, self.lambd])
+        print(f'Mamy {len(punkts)} punkty:')
+        for i, punkt in enumerate(punkts):
+            x, y, lambd = punkt
+            print(f'Punkt {i+1}({x}, {y}, {lambd})')
+        return punkts
+
+    def define_delta3(self):
+        l_xx = self.l_x.diff('x')
+        l_xy = self.l_x.diff('y')
+        l_yx = self.l_y.diff('x')
+        l_yy = self.l_y.diff('y')
+        g_x = self.g.diff('x')
+        g_y = self.g.diff('y')
+        delta3_matrix = Matrix([[0, g_x, g_y], [g_x, l_xx, l_xy], [g_y, l_yx, l_yy]])
+        pprint(delta3_matrix)
+        delta3 = delta3_matrix.det()
+        pprint(Eq(symbols('Delta3'), delta3))
+        return delta3
+
+    def check_sufficien_condition(self):
+        critical_punkts = self.get_punkts()
+        delta3 = self.define_delta3()
+        for i, punkt in enumerate(critical_punkts):
+            x, y, lambd = punkt
+            print(f'Dla P({x}, {y}, {lambd}): ')
+            delta_for_punkt = delta3.subs([(self.x, x), (self.y, y), (self.lambd, lambd)])
+            pprint(Eq(symbols('Delta3'), delta_for_punkt))
+            if delta_for_punkt > 0:
+                print(f'P({x}, {y}, {lambd}) jest minimum lokalne')
+            elif delta_for_punkt < 0:
+                print(f'P({x}, {y}, {lambd}) maksimum lokalne')
+            else:
+                print(f'P({x}, {y}, {lambd}) punkt siodlowy')
+
+
+EktremaLokalne('x**4 +y**4 -2*x**2 +4*x*y -2*y**2').check_sufficien_condition()
+
